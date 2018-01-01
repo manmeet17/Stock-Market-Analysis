@@ -13,7 +13,7 @@ def save_sp500():
         tickers.append(ticker)
     with open("sp500tickers.pickle","wb") as f:
         pickle.dump(tickers,f)
-    print (tickers)
+
     return tickers
 
 save_sp500()

@@ -1,9 +1,14 @@
 import datetime as dt
 import os
+import matplotlib.pyplot as plt
+from matplotlib import style
+import numpy as np
 import pandas as pd
 import pandas_datareader.data as web
 from scrape import save_sp500
 import pickle
+
+style.use('ggplot')
 
 def get_yahoo_data(reload_sp500=False):
     if reload_sp500:
@@ -54,5 +59,29 @@ def compile_data():
     print(main_df.head())
     main_df.to_csv('sp500_joined.csv')
 
-compile_data()
+# compile_data()
 
+def visualize_data():
+    df=pd.read_csv('sp500_joined.csv')
+    df_corr=df.corr()
+    data=df_corr.values
+    fig=plt.figure()
+    ax=fig.add_subplot(1,1,1)
+    
+    heatmap=ax.pcolor(data,cmap=plt.cm.RdYlGn)
+    fig.colorbar(heatmap)
+    ax.set_xticks(np.arange(data.shape[0])+0.5,minor=False)
+    ax.set_yticks(np.arange(data.shape[1])+0.5,minor=False)
+    ax.invert_yaxis()
+    ax.xaxis.tick_top()
+    
+    column_labels=df_corr.columns
+    row_labels=df_corr.index
+    ax.set_xticklabels(column_labels)
+    ax.set_yticklabels(row_labels)
+    plt.xticks(rotation=90)
+    heatmap.set_clim(-1,1)
+
+    plt.tight_layout()
+    plt.show()
+visualize_data()
