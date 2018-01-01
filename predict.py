@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import pickle
 from collections import Counter
+from sklearn import svm,neighbors
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import VotingClassifier, RandomForestClassifier
+
 
 def process_data(ticker):
     days=7
@@ -18,7 +22,7 @@ def process_data(ticker):
 
 def buy_sell_hold(*args):
     cols=[c for c in args]
-    req=0.02
+    req=0.028
     for col in cols:
         if col>req:
             return 1
@@ -48,11 +52,24 @@ def extract_feature(ticker):
     df_vals=df[[ticker for ticker in tickers]].pct_change()
     df_vals=df_vals.replace([np.inf,-np.inf],0)
     df_vals.fillna(0,inplace=True)
-    print (df_vals)
+    # print (df_vals)
 
     X=df_vals.values
     y=df['{}_target'.format(ticker)].values
 
     return X,y,df
 
-(extract_feature('AMZN'))
+def ml(ticker):
+    X,y,df=extract_feature(ticker)
+    X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.25)
+    # clf=neighbors.KNeighborsClassifier()
+    clf=VotingClassifier([('lsvc',svm.LinearSVC()),('knn',neighbors.KNeighborsClassifier()),('rfor',RandomForestClassifier())])
+
+    clf.fit(X_train,y_train)
+    confidence=clf.score(X_test,y_test)
+    pre=clf.predict(X_test)
+    print('Predicted Values:',Counter(pre))
+    print("Accuracy:",confidence)
+    return confidence
+
+ml('MSFT')
