@@ -70,6 +70,28 @@ def ml(ticker):
     pre=clf.predict(X_test)
     print('Predicted Values:',Counter(pre))
     print("Accuracy:",confidence)
-    return confidence
+    return confidence,Counter(pre)
 
-ml('MSFT')
+def find(obj):
+    sorted_list=sorted(obj.items(),key=lambda x:x[1])
+    val=sorted_list[-1][0]
+    if val==0:
+        return "Hold"
+    if val==1:
+        return "Buy"
+    return "Sell"
+
+
+def get_companies():
+    df=pd.read_csv('sp500_joined.csv',index_col=0)
+    final=pd.DataFrame(columns=["Company","Stocks"])
+    companies=df.columns.values
+    for c in companies[15:25]:
+        print ("Company Ticker:",c)
+        con,pre=ml(c)
+        final=final.append({'Company':c,"Stocks":find(pre)},ignore_index=True)
+        print("\n\n")
+    print (final.head())
+    final.to_csv('predictions.csv')
+
+get_companies()
